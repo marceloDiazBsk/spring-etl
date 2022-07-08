@@ -47,7 +47,7 @@ public class SourceExtractionService {
                         bill.setReceiptId(rs.getLong("comprobante_id"));
                         bill.setExpiredDate(rs.getString("factura_vencimiento"));
                         bill.setPaymentDate(rs.getString("factura_fechapago"));
-                        bill.setHiddenStatus(rs.getString("hiddenStatus"));
+                        bill.setHiddenStatus(rs.getString("factura_hidden"));
                         bill.setDifferentiatedVat(rs.getBoolean("factura_ivadiferenciado"));
 
                         map.put(rs.getLong("factura_id"), bill);
