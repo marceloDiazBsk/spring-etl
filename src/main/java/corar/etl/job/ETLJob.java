@@ -13,6 +13,6 @@ public class ETLJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        etlService.commercial();
+        //etlService.commercial();
     }
 }
