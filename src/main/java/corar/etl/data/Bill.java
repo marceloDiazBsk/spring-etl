@@ -24,7 +24,7 @@ public class Bill {
     private Long providerId;
 
     @FieldAnnotation(sourceName = "forma_id")
-    private Long modelId;
+    private Long modeId;
 
     @FieldAnnotation(sourceName = "moneda_id")
     private Long currencyId;

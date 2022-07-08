@@ -14,13 +14,12 @@ public class ETLService2 {
     @Autowired
     ExtractionService2 extractionService;
 
-
-
     public void migrate(){
-        List<Class> resourceList = resourceService.getResourceList();
-        for(Class resource: resourceList) {
+        migrateBill();
+    }
 
-        }
+    private void migrateBill(){
+
     }
 
 }
