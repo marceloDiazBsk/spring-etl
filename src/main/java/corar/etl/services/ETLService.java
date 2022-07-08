@@ -28,12 +28,15 @@ public class ETLService {
     }
 
     private void migrateBill(){
+        System.out.println("MIGRATE BILL - START");
         HashMap<Long, Object> sourceMap = sourceExtractionService.getBillMap();
         HashMap<Long, Object> targetMap = targetExtractionService.getBillMap();
         ArrayList<Operation> operationList = compareService.getChanges(sourceMap,targetMap);
         for(Operation operation : operationList) {
             System.out.println("Operation:" + operation.getOperation());
         }
+        System.out.println("Operation Size:" + operationList.size());
+        System.out.println("MIGRATE BILL - FINISH");
     }
 
 }
