@@ -25,7 +25,6 @@ public class ETLService {
     private void migrateBill(){
         HashMap<Long, Bill> sourceMap = sourceExtractionService.getBillMap();
         HashMap<Long, Bill> targetMap = targetExtractionService.getBillMap();
-
     }
 
 }

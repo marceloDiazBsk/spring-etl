@@ -55,7 +55,7 @@ public class SourceExtractionService {
                 }
             }
         }catch (SQLException e) {
-            LOGGER.info("getSourceBillList " + e);
+            LOGGER.info("getBillMap " + e);
         }
         return map;
     }

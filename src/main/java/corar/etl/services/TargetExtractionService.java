@@ -30,41 +30,41 @@ public class TargetExtractionService {
                 try(ResultSet rs = ps.executeQuery()){
                     while (rs.next()){
                         Bill bill = new Bill();
-                        bill.setBillId(rs.getLong("factura_id"));
-                        bill.setProviderId(rs.getLong("proveedor_id"));
-                        bill.setModeId(rs.getLong("proveedor_id"));
-                        bill.setCurrencyId(rs.getLong("moneda_id"));
-                        bill.setDate(rs.getString("factura_fecha"));
-                        bill.setNumber(rs.getString("factura_numero"));
-                        bill.setAmount(rs.getBigDecimal("factura_monto"));
-                        bill.setVat(rs.getBigDecimal("factura_iva"));
-                        bill.setRealTotalAmount(rs.getBigDecimal("factura_totalreal"));
-                        bill.setAccumulated(rs.getBigDecimal("factura_sumatoria"));
-                        bill.setTotalAmount(rs.getBigDecimal("factura_total"));
-                        bill.setStatus(rs.getString("factura_estado"));
-                        bill.setDays(rs.getInt("factura_dias"));
-                        bill.setSourceId(rs.getLong("centro_id"));
-                        bill.setReceiptId(rs.getLong("comprobante_id"));
-                        bill.setExpiredDate(rs.getString("factura_vencimiento"));
-                        bill.setPaymentDate(rs.getString("factura_fechapago"));
-                        bill.setHiddenStatus(rs.getString("hiddenStatus"));
-                        bill.setDifferentiatedVat(rs.getBoolean("factura_ivadiferenciado"));
+                        bill.setId(rs.getLong("id"));
+                        bill.setBillId(rs.getLong("bill_id"));
+                        bill.setProviderId(rs.getLong("provider_id"));
+                        bill.setModeId(rs.getLong("mode_id"));
+                        bill.setCurrencyId(rs.getLong("currency_id"));
+                        bill.setDate(rs.getString("date"));
+                        bill.setNumber(rs.getString("number"));
+                        bill.setAmount(rs.getBigDecimal("amount"));
+                        bill.setVat(rs.getBigDecimal("vat"));
+                        bill.setRealTotalAmount(rs.getBigDecimal("total_amount"));
+                        bill.setAccumulated(rs.getBigDecimal("accumulated"));
+                        bill.setTotalAmount(rs.getBigDecimal("total_amount"));
+                        bill.setStatus(rs.getString("status"));
+                        bill.setDays(rs.getInt("days"));
+                        bill.setSourceId(rs.getLong("source_id"));
+                        bill.setReceiptId(rs.getLong("receipt_id"));
+                        bill.setExpiredDate(rs.getString("expired_date"));
+                        bill.setPaymentDate(rs.getString("payment_date"));
+                        bill.setHiddenStatus(rs.getString("hidden_status"));
+                        bill.setDifferentiatedVat(rs.getBoolean("differentiated_vat"));
 
-                        map.put(rs.getLong("factura_id"), bill);
+                        map.put(rs.getLong("bill_id"), bill);
                     }
                 }
             }
         }catch (SQLException e) {
-            LOGGER.info("getSourceBillList " + e);
+            LOGGER.info("getBillMap " + e);
         }
         return map;
     }
 
     private String getBillSQL(){
-        return "select factura_id, proveedor_id, forma_id, moneda_id, factura_fecha, " +
-                "factura_numero, factura_monto, factura_iva, factura_totalreal, factura_sumatoria, " +
-                "factura_total, factura_estado, factura_dias, centro_id, comprobante_id, " +
-                "factura_vencimiento, factura_fechapago, factura_status, factura_hidden, " +
-                "factura_timestamp, factura_ivadiferenciado from factura;";
+        return "select id, bill_id, provider_id, mode_id, currency_id, date, number, " +
+                "amount, vat, real_total_amount, accumulated, total_amount, status, " +
+                "days, source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat " +
+                "from bill_copy ";
     }
 }
