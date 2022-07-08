@@ -15,18 +15,18 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 @Service
-public class ExtractionService2 {
+public class SourceExtractionService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ExtractionService2.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SourceExtractionService.class);
 
     @Qualifier("mysql")
     @Autowired
-    private DataSource mysqlDataSource;
+    private DataSource dataSource;
 
-    public HashMap<Long,Bill> getSourceBillList(){
+    public HashMap<Long,Bill> getBillMap(){
         HashMap<Long,Bill> map = new HashMap<>();
-        try(Connection connection = mysqlDataSource.getConnection()){
-            try(PreparedStatement ps = connection.prepareStatement(getSourceBillSQL())){
+        try(Connection connection = dataSource.getConnection()){
+            try(PreparedStatement ps = connection.prepareStatement(getBillSQL())){
                 try(ResultSet rs = ps.executeQuery()){
                     while (rs.next()){
                         Bill bill = new Bill();
@@ -60,7 +60,7 @@ public class ExtractionService2 {
         return map;
     }
 
-    private String getSourceBillSQL(){
+    private String getBillSQL(){
         return "select factura_id, proveedor_id, forma_id, moneda_id, factura_fecha, " +
                 "factura_numero, factura_monto, factura_iva, factura_totalreal, factura_sumatoria, " +
                 "factura_total, factura_estado, factura_dias, centro_id, comprobante_id, " +
