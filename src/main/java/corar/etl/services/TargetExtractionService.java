@@ -23,8 +23,8 @@ public class TargetExtractionService {
     @Autowired
     private DataSource dataSource;
 
-    public HashMap<Long,Bill> getBillMap(){
-        HashMap<Long,Bill> map = new HashMap<>();
+    public HashMap<Long,Object> getBillMap(){
+        HashMap<Long,Object> map = new HashMap<>();
         try(Connection connection = dataSource.getConnection()){
             try(PreparedStatement ps = connection.prepareStatement(getBillSQL())){
                 try(ResultSet rs = ps.executeQuery()){

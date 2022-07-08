@@ -18,13 +18,17 @@ public class ETLService {
     @Autowired
     TargetExtractionService targetExtractionService;
 
+    @Autowired
+    CompareService compareService;
+
     public void migrate(){
         migrateBill();
     }
 
     private void migrateBill(){
-        HashMap<Long, Bill> sourceMap = sourceExtractionService.getBillMap();
-        HashMap<Long, Bill> targetMap = targetExtractionService.getBillMap();
+        HashMap<Long, Object> sourceMap = sourceExtractionService.getBillMap();
+        HashMap<Long, Object> targetMap = targetExtractionService.getBillMap();
+        compareService.getChanges(sourceMap,targetMap);
     }
 
 }
