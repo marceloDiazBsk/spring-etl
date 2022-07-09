@@ -13,8 +13,6 @@ public class ETLJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        System.out.println("INGRESA A LA EJECUCION DEL JOB");
         etlService.migrate();
-        System.out.println("FINALIZA LA EJECUCION DEL JOB");
     }
 }
