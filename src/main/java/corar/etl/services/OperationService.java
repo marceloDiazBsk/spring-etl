@@ -106,52 +106,14 @@ public class OperationService {
             try (Statement st = connection.createStatement()) {
                 for (Operation operation : operationList) {
                     Object data = operation.getData();
-                    Class<?> dataClass = data.getClass();
-                    if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
-                        TableAnnotation tableAnnotation = dataClass.getAnnotation(TableAnnotation.class);
-                        String targetTable = tableAnnotation.targetTable();
-
-                        StringBuilder statement = new StringBuilder();
-                        statement
-                                .append("UPDATE ")
-                                .append(targetTable)
-                                .append(" SET ");
-
-                        ArrayList<String> changeList = operation.getChangeList();
-                        for (String change : changeList) {
-                            Field field = dataClass.getField(change);
-                            statement
-                                    .append(camelToSnakeCase(change))
-                                    .append(" = ")
-                                    .append("'")
-                                    .append(field.get(data).toString())
-                                    .append("'");
-                        }
-
-                        for (Field field: dataClass.getDeclaredFields()) {
-                            if (field.isAnnotationPresent(Id.class)) {
-                                statement
-                                        .append(" WHERE ")
-                                        .append(camelToSnakeCase(field.getName()))
-                                        .append(" = ")
-                                        .append("'")
-                                        .append(field.get(data))
-                                        .append("'");
-                            }
-                        }
-
-                        LOGGER.info("statement: " + statement);
-
-                        st.executeUpdate(statement.toString());
-                    }
-
-
+                    String updateScript = getUpdateSQL(data, operation.getChangeList());
+                    LOGGER.info("STATEMENT: " + updateScript);
+                    st.executeUpdate(updateScript);
                 }
             }
-
             connection.commit();
         } catch (SQLException | NoSuchFieldException | IllegalAccessException e) {
-            LOGGER.error("insertBillList:", e);
+            LOGGER.error("updateBillList:", e);
         }
 
     }
@@ -166,5 +128,41 @@ public class OperationService {
 
     private String camelToSnakeCase(String value) {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, value);
+    }
+
+    private String getUpdateSQL(Object data, ArrayList<String> changeList) throws NoSuchFieldException, IllegalAccessException {
+        StringBuilder statement = new StringBuilder();
+        Class<?> dataClass = data.getClass();
+        if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
+            TableAnnotation tableAnnotation = dataClass.getAnnotation(TableAnnotation.class);
+            String targetTable = tableAnnotation.targetTable();
+            statement
+                    .append("UPDATE ")
+                    .append(targetTable)
+                    .append(" SET ");
+
+            for (String change : changeList) {
+                Field field = dataClass.getField(change);
+                statement
+                        .append(camelToSnakeCase(change))
+                        .append(" = ")
+                        .append("'")
+                        .append(field.get(data).toString())
+                        .append("'");
+            }
+
+            for (Field field : dataClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    statement
+                            .append(" WHERE ")
+                            .append(camelToSnakeCase(field.getName()))
+                            .append(" = ")
+                            .append("'")
+                            .append(field.get(data))
+                            .append("'");
+                }
+            }
+        }
+        return statement.toString();
     }
 }
