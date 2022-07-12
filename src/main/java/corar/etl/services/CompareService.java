@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,29 +29,22 @@ public class CompareService{
             Object source = entry.getValue();
             if(targetMap.containsKey(entry.getKey())){
                 Object target = targetMap.get(entry.getKey());
+
+                //Normalize object, use same precision for numeric values, etc;
+                normalizeObject(source);
+                normalizeObject(target);
+
                 //Evaluate with the target object if we have changes
                 Diff diff = javers.compare(source, target);
                 List<ValueChange> changeList = diff.getChangesByType(ValueChange.class);
                 if(changeList.size() > 0){
                     ArrayList<String> propertiesChanged = new ArrayList<>();
                     changeList.forEach( valueChange -> propertiesChanged.add(valueChange.getPropertyName()));
-                    operationList.add(new Operation(OperationType.UPDATE.getCode(), propertiesChanged,source));
-                    propertiesChanged.forEach(valueName -> {
-                        try{
-                            LOGGER.info("value: " + valueName);
-                            Field sourceField = source.getClass().getDeclaredField(valueName);
-                            Object value = sourceField.get(source);
-                            System.out.println("valueChange " + valueName);
-                            System.out.println("Value " + value);
-                        }catch (NoSuchFieldException e) {
-                            throw new RuntimeException(e);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    });
-
-
+                    propertiesChanged.remove("id"); //Remove id because never we will have the same id
+                    if(propertiesChanged.size() > 0){
+                        //We have changes then create an update operation
+                        operationList.add(new Operation(OperationType.UPDATE.getCode(), propertiesChanged,source));
+                    }
                 }
             }else{
                 //If targetMap no contains object, need to insert
@@ -63,5 +58,22 @@ public class CompareService{
         }
 
         return operationList;
+    }
+
+    private void normalizeObject(Object object){
+        if(object != null){
+            for(Field field : object.getClass().getDeclaredFields()){
+                if(BigDecimal.class.equals(field.getType())){
+                    try {
+                        BigDecimal value = (BigDecimal) field.get(object);
+                        if(value != null){
+                            field.set(object, value.setScale(4, RoundingMode.HALF_UP));
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
     }
 }

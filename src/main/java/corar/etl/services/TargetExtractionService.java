@@ -40,7 +40,7 @@ public class TargetExtractionService {
                         bill.setNumber(rs.getString("number"));
                         bill.setAmount(rs.getBigDecimal("amount"));
                         bill.setVat(rs.getBigDecimal("vat"));
-                        bill.setRealTotalAmount(rs.getBigDecimal("total_amount"));
+                        bill.setRealTotalAmount(rs.getBigDecimal("real_total_amount"));
                         bill.setAccumulated(rs.getBigDecimal("accumulated"));
                         bill.setTotalAmount(rs.getBigDecimal("total_amount"));
                         bill.setStatus(rs.getString("status"));

@@ -98,8 +98,8 @@ public class OperationService {
     private void updateBillList(List<Operation> operationList){
         for (Operation operation : operationList) {
             ArrayList<String> changes =  operation.getChangeList();
-            LOGGER.info("Operation: " + operation.getData().toString());
-            LOGGER.info("changes: " + changes);
+            //LOGGER.info("Operation: " + operation.getData().toString());
+            //LOGGER.info("changes: " + changes);
         }
     }
 
