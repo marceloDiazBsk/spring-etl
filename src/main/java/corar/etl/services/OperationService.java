@@ -31,25 +31,39 @@ public class OperationService {
                 .stream()
                 .filter(operation -> operation.getOperation().equals(OperationType.INSERT.getCode()))
                 .collect(Collectors.toList());
+
+        long insertStartTime = System.currentTimeMillis();
         insertBillList(insertList);
+        long insertEndTime = System.currentTimeMillis();
+        System.out.println("insert quantity: " + insertList.size() + " finish in :  " +  (insertEndTime - insertStartTime) + " ms");
+
 
         List<Operation> updateList = operationList
                 .stream()
                 .filter(operation -> operation.getOperation().equals(OperationType.UPDATE.getCode()))
                 .collect(Collectors.toList());
 
+        long updateStartTime = System.currentTimeMillis();
+        updateBillList(updateList);
+        long updateEndTime = System.currentTimeMillis();
+        System.out.println("update quantity: " + updateList.size() + " finish in :  " +  (updateEndTime - updateStartTime) + " ms");
+
         List<Operation> deleteList = operationList
                 .stream()
-                .filter(operation -> operation.getOperation().equals(OperationType.UPDATE.getCode()))
+                .filter(operation -> operation.getOperation().equals(OperationType.DELETE.getCode()))
                 .collect(Collectors.toList());
+
+        long deleteStartTime = System.currentTimeMillis();
+        long deleteEndTime = System.currentTimeMillis();
+        System.out.println("delete quantity: " + deleteList.size() + " finish in :  " +  (deleteEndTime - deleteStartTime) + " ms");
 
     }
 
-    private void insertBillList(List<Operation> insertList){
+    private void insertBillList(List<Operation> operationList){
         try(Connection connection = dataSource.getConnection()){
             connection.setAutoCommit(false);
-            try(PreparedStatement ps = connection.prepareStatement(getBillSQL())){
-                for (Operation operation : insertList) {
+            try(PreparedStatement ps = connection.prepareStatement(getInsertBillSQL())){
+                for (Operation operation : operationList) {
                     Bill source = (Bill) operation.getData();
                     ps.setLong(1, source.getBillId());
                     ps.setLong(2, source.getProviderId());
@@ -81,7 +95,15 @@ public class OperationService {
 
     }
 
-    private String getBillSQL(){
+    private void updateBillList(List<Operation> operationList){
+        for (Operation operation : operationList) {
+            ArrayList<String> changes =  operation.getChangeList();
+            LOGGER.info("Operation: " + operation.getData().toString());
+            LOGGER.info("changes: " + changes);
+        }
+    }
+
+    private String getInsertBillSQL(){
         return "INSERT INTO public.bill_copy(" +
                 "bill_id, provider_id, mode_id, currency_id, date, \"number\", " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, days, " +

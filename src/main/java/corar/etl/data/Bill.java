@@ -15,62 +15,62 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @TableAnnotation(sourceName = "factura")
 public class Bill {
-    private Long id;
+    public Long id;
 
     @FieldAnnotation(sourceName = "factura_id")
-    private Long billId;
+    public Long billId;
 
     @FieldAnnotation(sourceName = "proveedor_id")
-    private Long providerId;
+    public Long providerId;
 
     @FieldAnnotation(sourceName = "forma_id")
-    private Long modeId;
+    public Long modeId;
 
     @FieldAnnotation(sourceName = "moneda_id")
-    private Long currencyId;
+    public Long currencyId;
 
     @FieldAnnotation(sourceName = "factura_fecha")
-    private String date;
+    public String date;
 
     @FieldAnnotation(sourceName = "factura_numero")
-    private String number;
+    public String number;
 
     @FieldAnnotation(sourceName = "factura_monto")
-    private BigDecimal amount;
+    public BigDecimal amount;
 
     @FieldAnnotation(sourceName = "factura_iva")
-    private BigDecimal vat;
+    public BigDecimal vat;
 
     @FieldAnnotation(sourceName = "factura_totalreal")
-    private BigDecimal realTotalAmount;
+    public BigDecimal realTotalAmount;
 
     @FieldAnnotation(sourceName = "factura_sumatoria")
-    private BigDecimal accumulated;
+    public BigDecimal accumulated;
 
     @FieldAnnotation(sourceName = "factura_total")
-    private BigDecimal totalAmount;
+    public BigDecimal totalAmount;
 
     @FieldAnnotation(sourceName = "factura_estado")
-    private String status;
+    public String status;
 
     @FieldAnnotation(sourceName = "factura_dias")
-    private Integer days;
+    public Integer days;
 
     @FieldAnnotation(sourceName = "centro_id")
-    private Long sourceId;
+    public Long sourceId;
 
     @FieldAnnotation(sourceName = "comprobante_id")
-    private Long receiptId;
+    public Long receiptId;
 
     @FieldAnnotation(sourceName = "factura_vencimiento")
-    private String expiredDate;
+    public String expiredDate;
 
     @FieldAnnotation(sourceName = "factura_fechapago")
-    private String paymentDate;
+    public String paymentDate;
 
     @FieldAnnotation(sourceName = "factura_status")
-    private String hiddenStatus;
+    public String hiddenStatus;
 
     @FieldAnnotation(sourceName = "factura_ivadiferenciado")
-    private Boolean differentiatedVat;
+    public Boolean differentiatedVat;
 }

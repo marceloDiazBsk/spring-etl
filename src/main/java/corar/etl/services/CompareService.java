@@ -6,6 +6,8 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.javers.core.diff.changetype.ValueChange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Service
 public class CompareService{
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(CompareService.class);
 
     public ArrayList<Operation> getChanges(HashMap<Long, Object> sourceMap, HashMap<Long, Object> targetMap){
         Javers javers = JaversBuilder.javers().build();
@@ -30,6 +34,22 @@ public class CompareService{
                     ArrayList<String> propertiesChanged = new ArrayList<>();
                     changeList.forEach( valueChange -> propertiesChanged.add(valueChange.getPropertyName()));
                     operationList.add(new Operation(OperationType.UPDATE.getCode(), propertiesChanged,source));
+                    propertiesChanged.forEach(valueName -> {
+                        try{
+                            LOGGER.info("value: " + valueName);
+                            Field sourceField = source.getClass().getDeclaredField(valueName);
+                            Object value = sourceField.get(source);
+                            System.out.println("valueChange " + valueName);
+                            System.out.println("Value " + value);
+                        }catch (NoSuchFieldException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    });
+
+
                 }
             }else{
                 //If targetMap no contains object, need to insert
