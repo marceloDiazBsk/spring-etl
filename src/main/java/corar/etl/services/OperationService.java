@@ -49,7 +49,7 @@ public class OperationService {
                 .collect(Collectors.toList());
 
         long updateStartTime = System.currentTimeMillis();
-        updateBillList(updateList);
+        //updateBillList(updateList);
         long updateEndTime = System.currentTimeMillis();
         System.out.println("UPDATE QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
 
@@ -69,13 +69,14 @@ public class OperationService {
             connection.setAutoCommit(false);
             try (PreparedStatement ps = connection.prepareStatement(getInsertBillSQL())) {
                 for (Operation operation : operationList) {
+                    LOGGER.info("AUTOGENERADO: " + getInsertSQL(operation.getData()));
                     Bill source = (Bill) operation.getData();
                     ps.setLong(1, source.getBillId());
                     ps.setLong(2, source.getProviderId());
                     ps.setLong(3, source.getModeId());
                     ps.setLong(4, source.getCurrencyId());
                     ps.setString(5, source.getDate());
-                    ps.setString(6, source.getNumber());
+                    ps.setString(6, source.getBillNumber());
                     ps.setBigDecimal(7, source.getAmount());
                     ps.setBigDecimal(8, source.getVat());
                     ps.setBigDecimal(9, source.getRealTotalAmount());
@@ -89,7 +90,7 @@ public class OperationService {
                     ps.setString(17, source.getPaymentDate());
                     ps.setString(18, source.getHiddenStatus());
                     ps.setBoolean(19, source.getDifferentiatedVat());
-
+                    LOGGER.info("PS: " + ps);
                     ps.executeUpdate();
                 }
             }
@@ -120,7 +121,7 @@ public class OperationService {
 
     private String getInsertBillSQL() {
         return "INSERT INTO public.bill_copy(" +
-                "bill_id, provider_id, mode_id, currency_id, date, \"number\", " +
+                "bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, days, " +
                 "source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat)" +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -130,7 +131,8 @@ public class OperationService {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, value);
     }
 
-    private String getUpdateSQL(Object data, ArrayList<String> changeList) throws NoSuchFieldException, IllegalAccessException {
+    private String getUpdateSQL(Object data, ArrayList<String> changeList)
+            throws NoSuchFieldException, IllegalAccessException {
         StringBuilder statement = new StringBuilder();
         Class<?> dataClass = data.getClass();
         if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
@@ -162,6 +164,42 @@ public class OperationService {
                             .append("'");
                 }
             }
+        }
+        return statement.toString();
+    }
+
+    private String getInsertSQL(Object data) {
+        StringBuilder statement = new StringBuilder();
+        StringBuilder parameterStatement = new StringBuilder();
+        Class<?> dataClass = data.getClass();
+        if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
+            TableAnnotation tableAnnotation = dataClass.getAnnotation(TableAnnotation.class);
+            String targetTable = tableAnnotation.targetTable();
+
+            statement
+                    .append("INSERT INTO ")
+                    .append(targetTable)
+                    .append(" (");
+
+            for (Field field : dataClass.getDeclaredFields()) {
+                if (!field.isAnnotationPresent(Id.class)) {
+                    statement
+                            .append(camelToSnakeCase(field.getName()))
+                            .append(",");
+
+                    parameterStatement
+                            .append("?,");
+                }
+
+            }
+
+            if (statement.length() > 0) statement.setLength(statement.length() - 1);
+            if (parameterStatement.length() > 0) parameterStatement.setLength(parameterStatement.length() - 1);
+
+            statement
+                    .append(") VALUES( ")
+                    .append(parameterStatement)
+                    .append(")");
         }
         return statement.toString();
     }

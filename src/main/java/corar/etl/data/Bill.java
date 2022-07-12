@@ -3,10 +3,7 @@ package corar.etl.data;
 import corar.etl.annotations.FieldAnnotation;
 import corar.etl.annotations.Id;
 import corar.etl.annotations.TableAnnotation;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -15,6 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableAnnotation(sourceTable = "factura", targetTable = "bill_copy")
+@ToString
 public class Bill {
     public Long id;
 
@@ -35,7 +33,7 @@ public class Bill {
     public String date;
 
     @FieldAnnotation(sourceName = "factura_numero")
-    public String number;
+    public String billNumber;
 
     @FieldAnnotation(sourceName = "factura_monto")
     public BigDecimal amount;

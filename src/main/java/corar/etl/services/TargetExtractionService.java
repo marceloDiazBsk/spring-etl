@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +36,7 @@ public class TargetExtractionService {
                         bill.setModeId(rs.getLong("mode_id"));
                         bill.setCurrencyId(rs.getLong("currency_id"));
                         bill.setDate(rs.getString("date"));
-                        bill.setNumber(rs.getString("number"));
+                        bill.setBillNumber(rs.getString("bill_number"));
                         bill.setAmount(rs.getBigDecimal("amount"));
                         bill.setVat(rs.getBigDecimal("vat"));
                         bill.setRealTotalAmount(rs.getBigDecimal("real_total_amount"));
@@ -63,9 +62,9 @@ public class TargetExtractionService {
     }
 
     private String getBillSQL(){
-        return "select id, bill_id, provider_id, mode_id, currency_id, date, number, " +
+        return "select id, bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, " +
                 "days, source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat " +
-                "from bill_copy ";
+                "from bill_copy";
     }
 }

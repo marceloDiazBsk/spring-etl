@@ -35,7 +35,7 @@ public class SourceExtractionService {
                         bill.setModeId(rs.getLong("proveedor_id"));
                         bill.setCurrencyId(rs.getLong("moneda_id"));
                         bill.setDate(rs.getString("factura_fecha"));
-                        bill.setNumber(rs.getString("factura_numero"));
+                        bill.setBillNumber(rs.getString("factura_numero"));
                         bill.setAmount(rs.getBigDecimal("factura_monto"));
                         bill.setVat(rs.getBigDecimal("factura_iva"));
                         bill.setRealTotalAmount(rs.getBigDecimal("factura_totalreal"));
@@ -65,6 +65,6 @@ public class SourceExtractionService {
                 "factura_numero, factura_monto, factura_iva, factura_totalreal, factura_sumatoria, " +
                 "factura_total, factura_estado, factura_dias, centro_id, comprobante_id, " +
                 "factura_vencimiento, factura_fechapago, factura_status, factura_hidden, " +
-                "factura_timestamp, factura_ivadiferenciado from factura;";
+                "factura_timestamp, factura_ivadiferenciado from factura; ";
     }
 }
