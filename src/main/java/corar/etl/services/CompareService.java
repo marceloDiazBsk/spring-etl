@@ -66,9 +66,7 @@ public class CompareService{
                 if(BigDecimal.class.equals(field.getType())){
                     try {
                         BigDecimal value = (BigDecimal) field.get(object);
-                        if(value != null){
-                            field.set(object, value.setScale(4, RoundingMode.HALF_UP));
-                        }
+                        if(value != null) field.set(object, value.setScale(4, RoundingMode.HALF_UP));
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }

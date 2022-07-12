@@ -1,5 +1,8 @@
 package corar.etl.services;
 
+import com.google.common.base.CaseFormat;
+import corar.etl.annotations.Id;
+import corar.etl.annotations.TableAnnotation;
 import corar.etl.core.Operation;
 import corar.etl.data.Bill;
 import corar.etl.emun.OperationType;
@@ -10,9 +13,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +31,7 @@ public class OperationService {
     @Autowired
     private DataSource dataSource;
 
-    public void processBill(ArrayList<Operation> operationList){
+    public void processBill(ArrayList<Operation> operationList) {
         List<Operation> insertList = operationList
                 .stream()
                 .filter(operation -> operation.getOperation().equals(OperationType.INSERT.getCode()))
@@ -35,7 +40,7 @@ public class OperationService {
         long insertStartTime = System.currentTimeMillis();
         insertBillList(insertList);
         long insertEndTime = System.currentTimeMillis();
-        System.out.println("insert quantity: " + insertList.size() + " finish in :  " +  (insertEndTime - insertStartTime) + " ms");
+        System.out.println("INSERT QUANTITY: " + insertList.size() + " FINISH IN:  " + (insertEndTime - insertStartTime) + " ms");
 
 
         List<Operation> updateList = operationList
@@ -46,7 +51,7 @@ public class OperationService {
         long updateStartTime = System.currentTimeMillis();
         updateBillList(updateList);
         long updateEndTime = System.currentTimeMillis();
-        System.out.println("update quantity: " + updateList.size() + " finish in :  " +  (updateEndTime - updateStartTime) + " ms");
+        System.out.println("UPDATE QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
 
         List<Operation> deleteList = operationList
                 .stream()
@@ -55,14 +60,14 @@ public class OperationService {
 
         long deleteStartTime = System.currentTimeMillis();
         long deleteEndTime = System.currentTimeMillis();
-        System.out.println("delete quantity: " + deleteList.size() + " finish in :  " +  (deleteEndTime - deleteStartTime) + " ms");
+        System.out.println("DELETE QUANTITY: " + deleteList.size() + " FINISH IN:  " + (deleteEndTime - deleteStartTime) + " ms");
 
     }
 
-    private void insertBillList(List<Operation> operationList){
-        try(Connection connection = dataSource.getConnection()){
+    private void insertBillList(List<Operation> operationList) {
+        try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            try(PreparedStatement ps = connection.prepareStatement(getInsertBillSQL())){
+            try (PreparedStatement ps = connection.prepareStatement(getInsertBillSQL())) {
                 for (Operation operation : operationList) {
                     Bill source = (Bill) operation.getData();
                     ps.setLong(1, source.getBillId());
@@ -89,25 +94,77 @@ public class OperationService {
                 }
             }
             connection.commit();
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             LOGGER.error("insertBillList:", e);
         }
 
     }
 
-    private void updateBillList(List<Operation> operationList){
-        for (Operation operation : operationList) {
-            ArrayList<String> changes =  operation.getChangeList();
-            //LOGGER.info("Operation: " + operation.getData().toString());
-            //LOGGER.info("changes: " + changes);
+    private void updateBillList(List<Operation> operationList) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try (Statement st = connection.createStatement()) {
+                for (Operation operation : operationList) {
+                    Object data = operation.getData();
+                    Class<?> dataClass = data.getClass();
+                    if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
+                        TableAnnotation tableAnnotation = dataClass.getAnnotation(TableAnnotation.class);
+                        String targetTable = tableAnnotation.targetTable();
+
+                        StringBuilder statement = new StringBuilder();
+                        statement
+                                .append("UPDATE ")
+                                .append(targetTable)
+                                .append(" SET ");
+
+                        ArrayList<String> changeList = operation.getChangeList();
+                        for (String change : changeList) {
+                            Field field = dataClass.getField(change);
+                            statement
+                                    .append(camelToSnakeCase(change))
+                                    .append(" = ")
+                                    .append("'")
+                                    .append(field.get(data).toString())
+                                    .append("'");
+                        }
+
+                        for (Field field: dataClass.getDeclaredFields()) {
+                            if (field.isAnnotationPresent(Id.class)) {
+                                statement
+                                        .append(" WHERE ")
+                                        .append(camelToSnakeCase(field.getName()))
+                                        .append(" = ")
+                                        .append("'")
+                                        .append(field.get(data))
+                                        .append("'");
+                            }
+                        }
+
+                        LOGGER.info("statement: " + statement);
+
+                        st.executeUpdate(statement.toString());
+                    }
+
+
+                }
+            }
+
+            connection.commit();
+        } catch (SQLException | NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("insertBillList:", e);
         }
+
     }
 
-    private String getInsertBillSQL(){
+    private String getInsertBillSQL() {
         return "INSERT INTO public.bill_copy(" +
                 "bill_id, provider_id, mode_id, currency_id, date, \"number\", " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, days, " +
                 "source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat)" +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    }
+
+    private String camelToSnakeCase(String value) {
+        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, value);
     }
 }

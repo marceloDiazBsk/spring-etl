@@ -1,6 +1,7 @@
 package corar.etl.data;
 
 import corar.etl.annotations.FieldAnnotation;
+import corar.etl.annotations.Id;
 import corar.etl.annotations.TableAnnotation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,10 +14,11 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@TableAnnotation(sourceName = "factura")
+@TableAnnotation(sourceTable = "factura", targetTable = "bill_copy")
 public class Bill {
     public Long id;
 
+    @Id
     @FieldAnnotation(sourceName = "factura_id")
     public Long billId;
 
