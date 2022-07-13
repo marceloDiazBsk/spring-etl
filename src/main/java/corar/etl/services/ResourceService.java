@@ -15,7 +15,8 @@ public class ResourceService {
                 BillDetail.class,
                 Provider.class,
                 Currency.class,
-                Source.class
+                Source.class,
+                PaymentCondition.class
         );
     }
 }
