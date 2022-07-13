@@ -1,0 +1,23 @@
+create table bill_copy(
+	id SERIAL,
+	bill_id bigint,
+	provider_id bigint,
+	mode_id bigint,
+	currency_id bigint,
+	date varchar(255),
+	number varchar(255),
+	amount decimal(24,4),
+	vat decimal(24,4),
+	real_total_amount decimal(24,4),
+	accumulated decimal(24,4),
+	total_amount decimal(24,4),
+	status varchar(255),
+	days int,
+	source_id bigint,
+	receipt_id bigint,
+	expired_date varchar(255),
+	payment_date varchar(255),
+	hidden_status varchar(255),
+	differentiated_vat boolean,
+	PRIMARY KEY (id)
+);
