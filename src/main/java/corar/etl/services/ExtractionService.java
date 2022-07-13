@@ -33,7 +33,7 @@ public class ExtractionService {
     @Autowired
     private DataSource targetDataSource;
 
-    public HashMap<Long,Object> getMap(Class<?> resource, String type){
+    public HashMap<Long,Object> getMap(Class<?> resource, String type) throws SQLException {
         HashMap<Long,Object> map = new HashMap<>();
         DataSource dataSource = getDataSource(type);
         try(Connection connection = dataSource.getConnection()){
@@ -73,6 +73,7 @@ public class ExtractionService {
             }
         }catch (SQLException e) {
             LOGGER.info("getBillMap " + e);
+            throw e;
         }
         return map;
     }
@@ -82,14 +83,14 @@ public class ExtractionService {
     private String getSelectSQL(Class<?> resource, String type){
         StringBuilder sql = new StringBuilder();
         if (resource.isAnnotationPresent(TableAnnotation.class)) {
-            String sourceTable = getTableName(resource, type);
+            String table = getTableName(resource, type);
             sql.append(" SELECT ");
 
             for (Field field : resource.getDeclaredFields()){
                 if(field.isAnnotationPresent(FieldAnnotation.class)){
-                    FieldAnnotation fieldAnnotation = field.getAnnotation(FieldAnnotation.class);
+                    String fieldName = getFieldName(field, type);
                     sql
-                            .append(fieldAnnotation.sourceName())
+                            .append(fieldName)
                             .append(',');
                 }
             }
@@ -98,7 +99,7 @@ public class ExtractionService {
 
             sql
                     .append(" FROM ")
-                    .append(sourceTable)
+                    .append(table)
                     .append(';');
         }
 
