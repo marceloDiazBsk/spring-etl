@@ -34,7 +34,7 @@ public class ETLService {
     }
 
     private void migrateResource(Class<?> resource) {
-        HashMap<Long, Object> sourceMap = sourceExtractionService.getBillMap();
+        HashMap<Long, Object> sourceMap = sourceExtractionService.getMap(resource);
         HashMap<Long, Object> targetMap = targetExtractionService.getBillMap();
         ArrayList<Operation> operationList = compareService.getChanges(sourceMap,targetMap);
         operationService.process(resource, operationList);
