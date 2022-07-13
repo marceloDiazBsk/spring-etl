@@ -1,9 +1,6 @@
 package corar.etl.services;
 
-import corar.etl.data.Bill;
-import corar.etl.data.BillDetail;
-import corar.etl.data.Currency;
-import corar.etl.data.Provider;
+import corar.etl.data.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -17,7 +14,8 @@ public class ResourceService {
                 Bill.class,
                 BillDetail.class,
                 Provider.class,
-                Currency.class
+                Currency.class,
+                Source.class
         );
     }
 }
