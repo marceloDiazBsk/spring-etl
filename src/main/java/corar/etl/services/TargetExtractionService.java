@@ -30,7 +30,6 @@ public class TargetExtractionService {
                 try(ResultSet rs = ps.executeQuery()){
                     while (rs.next()){
                         Bill bill = new Bill();
-                        bill.setId(rs.getLong("id"));
                         bill.setBillId(rs.getLong("bill_id"));
                         bill.setProviderId(rs.getLong("provider_id"));
                         bill.setModeId(rs.getLong("mode_id"));
@@ -62,9 +61,9 @@ public class TargetExtractionService {
     }
 
     private String getBillSQL(){
-        return "select id, bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
+        return "select bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, " +
                 "days, source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat " +
-                "from bill_copy";
+                "from bill_copy order by bill_id limit 3";
     }
 }

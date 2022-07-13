@@ -89,6 +89,7 @@ public class OperationService {
                     ps.setString(17, source.getPaymentDate());
                     ps.setString(18, source.getHiddenStatus());
                     ps.setBoolean(19, source.getDifferentiatedVat());
+                    LOGGER.info("Ps insert: " + ps);
                     ps.executeUpdate();
                 }
             }
@@ -167,15 +168,12 @@ public class OperationService {
                     .append(" (");
 
             for (Field field : resource.getDeclaredFields()) {
-                if (!field.isAnnotationPresent(Id.class)) {
-                    statement
-                            .append(StringUtil.camelToSnakeCase(field.getName()))
-                            .append(",");
+                statement
+                        .append(StringUtil.camelToSnakeCase(field.getName()))
+                        .append(",");
 
-                    parameterStatement
-                            .append("?,");
-                }
-
+                parameterStatement
+                        .append("?,");
             }
 
             if (statement.length() > 0) statement.setLength(statement.length() - 1);

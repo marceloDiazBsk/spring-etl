@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 @TableAnnotation(sourceTable = "factura", targetTable = "bill_copy")
 @ToString
 public class Bill {
-    public Long id;
 
     @Id
     @FieldAnnotation(sourceName = "factura_id")
