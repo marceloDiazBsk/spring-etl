@@ -1,13 +1,12 @@
 package corar.etl.services;
 
 import corar.etl.core.Operation;
-import corar.etl.data.Bill;
-import corar.etl.emun.OperationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class ETLService {
@@ -28,14 +27,17 @@ public class ETLService {
     OperationService operationService;
 
     public void migrate(){
-        migrateBill();
+        List<Class<?>> resourceList = resourceService.getResourceList();
+        for (Class<?> resource : resourceList) {
+          migrateResource(resource);
+        }
     }
 
-    private void migrateBill(){
+    private void migrateResource(Class<?> resource) {
         HashMap<Long, Object> sourceMap = sourceExtractionService.getBillMap();
         HashMap<Long, Object> targetMap = targetExtractionService.getBillMap();
         ArrayList<Operation> operationList = compareService.getChanges(sourceMap,targetMap);
-        operationService.processBill(operationList);
+        operationService.process(resource, operationList);
     }
 
 }

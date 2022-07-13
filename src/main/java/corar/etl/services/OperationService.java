@@ -1,11 +1,11 @@
 package corar.etl.services;
 
-import com.google.common.base.CaseFormat;
 import corar.etl.annotations.Id;
 import corar.etl.annotations.TableAnnotation;
 import corar.etl.core.Operation;
 import corar.etl.data.Bill;
 import corar.etl.emun.OperationType;
+import corar.etl.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +31,16 @@ public class OperationService {
     @Autowired
     private DataSource dataSource;
 
-    public void processBill(ArrayList<Operation> operationList) {
+    public void process(Class<?> resource, ArrayList<Operation> operationList) {
         List<Operation> insertList = operationList
                 .stream()
                 .filter(operation -> operation.getOperation().equals(OperationType.INSERT.getCode()))
                 .collect(Collectors.toList());
 
         long insertStartTime = System.currentTimeMillis();
-        insertBillList(insertList);
+        insertOperationList(resource,insertList);
         long insertEndTime = System.currentTimeMillis();
-        System.out.println("INSERT QUANTITY: " + insertList.size() + " FINISH IN:  " + (insertEndTime - insertStartTime) + " ms");
+        LOGGER.info("INSERT "+ resource.getName() +" QUANTITY: " + insertList.size() + " FINISH IN:  " + (insertEndTime - insertStartTime) + " ms");
 
 
         List<Operation> updateList = operationList
@@ -49,9 +49,9 @@ public class OperationService {
                 .collect(Collectors.toList());
 
         long updateStartTime = System.currentTimeMillis();
-        //updateBillList(updateList);
+        updateOperationList(updateList);
         long updateEndTime = System.currentTimeMillis();
-        System.out.println("UPDATE QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
+        LOGGER.info("UPDATE "+ resource.getName()+ " QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
 
         List<Operation> deleteList = operationList
                 .stream()
@@ -60,16 +60,15 @@ public class OperationService {
 
         long deleteStartTime = System.currentTimeMillis();
         long deleteEndTime = System.currentTimeMillis();
-        System.out.println("DELETE QUANTITY: " + deleteList.size() + " FINISH IN:  " + (deleteEndTime - deleteStartTime) + " ms");
+        LOGGER.info("DELETE " + resource.getName()+ " QUANTITY: " + deleteList.size() + " FINISH IN:  " + (deleteEndTime - deleteStartTime) + " ms");
 
     }
 
-    private void insertBillList(List<Operation> operationList) {
+    private void insertOperationList(Class<?> resource, List<Operation> operationList) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            try (PreparedStatement ps = connection.prepareStatement(getInsertBillSQL())) {
+            try (PreparedStatement ps = connection.prepareStatement(getInsertSQL(resource))) {
                 for (Operation operation : operationList) {
-                    LOGGER.info("AUTOGENERADO: " + getInsertSQL(operation.getData()));
                     Bill source = (Bill) operation.getData();
                     ps.setLong(1, source.getBillId());
                     ps.setLong(2, source.getProviderId());
@@ -90,7 +89,6 @@ public class OperationService {
                     ps.setString(17, source.getPaymentDate());
                     ps.setString(18, source.getHiddenStatus());
                     ps.setBoolean(19, source.getDifferentiatedVat());
-                    LOGGER.info("PS: " + ps);
                     ps.executeUpdate();
                 }
             }
@@ -101,7 +99,7 @@ public class OperationService {
 
     }
 
-    private void updateBillList(List<Operation> operationList) {
+    private void updateOperationList(List<Operation> operationList) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try (Statement st = connection.createStatement()) {
@@ -119,18 +117,6 @@ public class OperationService {
 
     }
 
-    private String getInsertBillSQL() {
-        return "INSERT INTO public.bill_copy(" +
-                "bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
-                "amount, vat, real_total_amount, accumulated, total_amount, status, days, " +
-                "source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat)" +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-    }
-
-    private String camelToSnakeCase(String value) {
-        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, value);
-    }
-
     private String getUpdateSQL(Object data, ArrayList<String> changeList)
             throws NoSuchFieldException, IllegalAccessException {
         StringBuilder statement = new StringBuilder();
@@ -146,7 +132,7 @@ public class OperationService {
             for (String change : changeList) {
                 Field field = dataClass.getField(change);
                 statement
-                        .append(camelToSnakeCase(change))
+                        .append(StringUtil.camelToSnakeCase(change))
                         .append(" = ")
                         .append("'")
                         .append(field.get(data).toString())
@@ -157,7 +143,7 @@ public class OperationService {
                 if (field.isAnnotationPresent(Id.class)) {
                     statement
                             .append(" WHERE ")
-                            .append(camelToSnakeCase(field.getName()))
+                            .append(StringUtil.camelToSnakeCase(field.getName()))
                             .append(" = ")
                             .append("'")
                             .append(field.get(data))
@@ -168,12 +154,11 @@ public class OperationService {
         return statement.toString();
     }
 
-    private String getInsertSQL(Object data) {
+    private String getInsertSQL(Class<?> resource) {
         StringBuilder statement = new StringBuilder();
         StringBuilder parameterStatement = new StringBuilder();
-        Class<?> dataClass = data.getClass();
-        if (dataClass.isAnnotationPresent(TableAnnotation.class)) {
-            TableAnnotation tableAnnotation = dataClass.getAnnotation(TableAnnotation.class);
+        if (resource.isAnnotationPresent(TableAnnotation.class)) {
+            TableAnnotation tableAnnotation = resource.getAnnotation(TableAnnotation.class);
             String targetTable = tableAnnotation.targetTable();
 
             statement
@@ -181,10 +166,10 @@ public class OperationService {
                     .append(targetTable)
                     .append(" (");
 
-            for (Field field : dataClass.getDeclaredFields()) {
+            for (Field field : resource.getDeclaredFields()) {
                 if (!field.isAnnotationPresent(Id.class)) {
                     statement
-                            .append(camelToSnakeCase(field.getName()))
+                            .append(StringUtil.camelToSnakeCase(field.getName()))
                             .append(",");
 
                     parameterStatement

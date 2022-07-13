@@ -1,6 +1,5 @@
 package corar.etl;
 
-import corar.etl.services.LoadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
