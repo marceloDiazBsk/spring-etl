@@ -2,6 +2,7 @@ package corar.etl.services;
 
 import corar.etl.data.Bill;
 import corar.etl.data.BillDetail;
+import corar.etl.data.Currency;
 import corar.etl.data.Provider;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,8 @@ public class ResourceService {
         return Arrays.asList(
                 Bill.class,
                 BillDetail.class,
-                Provider.class
+                Provider.class,
+                Currency.class
         );
     }
 }
