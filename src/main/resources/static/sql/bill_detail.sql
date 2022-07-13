@@ -1,7 +1,7 @@
 create table bill_detail_copy(
     id SERIAL,
-    bill_id bigint,
     detail_id bigint,
+    bill_id bigint,
     quantity int,
     description varchar(255),
     unit_price decimal(24,4),
