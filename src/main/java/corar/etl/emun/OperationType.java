@@ -6,8 +6,8 @@ public enum OperationType {
     DELETE("D", "DELETE"),
     UPDATE("U", "UPDATE"),
     IGNORE("IG", "IGNORE");
-    private String code;
-    private String desc;
+    private final String code;
+    private final String desc;
 
     private OperationType(String code, String desc){
         this.code = code;

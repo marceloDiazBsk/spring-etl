@@ -1,6 +1,7 @@
 package corar.etl.services;
 
 import corar.etl.core.Operation;
+import corar.etl.emun.ResourceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +16,7 @@ public class ETLService {
     ResourceService resourceService;
 
     @Autowired
-    SourceExtractionService sourceExtractionService;
-
-    @Autowired
-    TargetExtractionService targetExtractionService;
+    ExtractionService extractionService;
 
     @Autowired
     CompareService compareService;
@@ -34,8 +32,8 @@ public class ETLService {
     }
 
     private void migrateResource(Class<?> resource) {
-        HashMap<Long, Object> sourceMap = sourceExtractionService.getMap(resource);
-        HashMap<Long, Object> targetMap = targetExtractionService.getBillMap();
+        HashMap<Long, Object> sourceMap = extractionService.getMap(resource, ResourceType.SOURCE.name());
+        HashMap<Long, Object> targetMap = extractionService.getMap(resource, ResourceType.TARGET.name());
         ArrayList<Operation> operationList = compareService.getChanges(sourceMap,targetMap);
         operationService.process(resource, operationList);
     }
