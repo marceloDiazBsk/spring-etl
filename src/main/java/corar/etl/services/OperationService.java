@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -40,7 +41,7 @@ public class OperationService {
         long insertStartTime = System.currentTimeMillis();
         insertOperationList(resource,insertList);
         long insertEndTime = System.currentTimeMillis();
-        LOGGER.info("INSERT "+ resource.getName() +" QUANTITY: " + insertList.size() + " FINISH IN:  " + (insertEndTime - insertStartTime) + " ms");
+        LOGGER.info("INSERT "+ resource.getSimpleName() +" QUANTITY: " + insertList.size() + " FINISH IN:  " + (insertEndTime - insertStartTime) + " ms");
 
 
         List<Operation> updateList = operationList
@@ -51,7 +52,7 @@ public class OperationService {
         long updateStartTime = System.currentTimeMillis();
         updateOperationList(updateList);
         long updateEndTime = System.currentTimeMillis();
-        LOGGER.info("UPDATE "+ resource.getName()+ " QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
+        LOGGER.info("UPDATE "+ resource.getSimpleName()+ " QUANTITY: " + updateList.size() + " FINISH IN:  " + (updateEndTime - updateStartTime) + " ms");
 
         List<Operation> deleteList = operationList
                 .stream()
@@ -60,7 +61,7 @@ public class OperationService {
 
         long deleteStartTime = System.currentTimeMillis();
         long deleteEndTime = System.currentTimeMillis();
-        LOGGER.info("DELETE " + resource.getName()+ " QUANTITY: " + deleteList.size() + " FINISH IN:  " + (deleteEndTime - deleteStartTime) + " ms");
+        LOGGER.info("DELETE " + resource.getSimpleName()+ " QUANTITY: " + deleteList.size() + " FINISH IN:  " + (deleteEndTime - deleteStartTime) + " ms");
 
     }
 
@@ -69,33 +70,34 @@ public class OperationService {
             connection.setAutoCommit(false);
             try (PreparedStatement ps = connection.prepareStatement(getInsertSQL(resource))) {
                 for (Operation operation : operationList) {
-                    Bill source = (Bill) operation.getData();
-                    ps.setLong(1, source.getBillId());
-                    ps.setLong(2, source.getProviderId());
-                    ps.setLong(3, source.getModeId());
-                    ps.setLong(4, source.getCurrencyId());
-                    ps.setString(5, source.getDate());
-                    ps.setString(6, source.getBillNumber());
-                    ps.setBigDecimal(7, source.getAmount());
-                    ps.setBigDecimal(8, source.getVat());
-                    ps.setBigDecimal(9, source.getRealTotalAmount());
-                    ps.setBigDecimal(10, source.getAccumulated());
-                    ps.setBigDecimal(11, source.getTotalAmount());
-                    ps.setString(12, source.getStatus());
-                    ps.setInt(13, source.getDays());
-                    ps.setLong(14, source.getSourceId());
-                    ps.setLong(15, source.getReceiptId());
-                    ps.setString(16, source.getExpiredDate());
-                    ps.setString(17, source.getPaymentDate());
-                    ps.setString(18, source.getHiddenStatus());
-                    ps.setBoolean(19, source.getDifferentiatedVat());
-                    LOGGER.info("Ps insert: " + ps);
+                    Object source = operation.getData();
+                    int index = 1;
+                    for (Field field : resource.getDeclaredFields()) {
+                        if (BigDecimal.class.equals(field.getType())) {
+                            ps.setBigDecimal(index, (BigDecimal) field.get(source));
+                        }
+                        if(String.class.equals(field.getType())){
+                            ps.setString(index, (String) field.get(source));
+                        }
+                        if(Integer.class.equals(field.getType())){
+                            ps.setInt(index, (Integer) field.get(source));
+                        }
+                        if(Long.class.equals(field.getType())){
+                            ps.setLong(index, (Long) field.get(source));
+                        }
+                        if(Boolean.class.equals(field.getType())){
+                            ps.setBoolean(index,(Boolean) field.get(source));
+                        }
+                        index++;
+                    }
                     ps.executeUpdate();
                 }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
             connection.commit();
         } catch (SQLException e) {
-            LOGGER.error("insertBillList:", e);
+            LOGGER.error("insertOperationList:", e);
         }
 
     }
@@ -107,13 +109,13 @@ public class OperationService {
                 for (Operation operation : operationList) {
                     Object data = operation.getData();
                     String updateScript = getUpdateSQL(data, operation.getChangeList());
-                    LOGGER.info("STATEMENT: " + updateScript);
+                    //LOGGER.info("STATEMENT: " + updateScript);
                     st.executeUpdate(updateScript);
                 }
             }
             connection.commit();
         } catch (SQLException | NoSuchFieldException | IllegalAccessException e) {
-            LOGGER.error("updateBillList:", e);
+            LOGGER.error("updateOperationList:", e);
         }
 
     }

@@ -64,6 +64,6 @@ public class TargetExtractionService {
         return "select bill_id, provider_id, mode_id, currency_id, date, bill_number, " +
                 "amount, vat, real_total_amount, accumulated, total_amount, status, " +
                 "days, source_id, receipt_id, expired_date, payment_date, hidden_status, differentiated_vat " +
-                "from bill_copy order by bill_id limit 3";
+                "from bill_copy;";
     }
 }

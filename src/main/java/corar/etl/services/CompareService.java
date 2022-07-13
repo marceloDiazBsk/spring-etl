@@ -23,8 +23,6 @@ public class CompareService{
     private final static Logger LOGGER = LoggerFactory.getLogger(CompareService.class);
 
     public ArrayList<Operation> getChanges(HashMap<Long, Object> sourceMap, HashMap<Long, Object> targetMap){
-        LOGGER.info("sourceMap: " + sourceMap);
-        LOGGER.info("targetMap: " + targetMap);
         Javers javers = JaversBuilder.javers().build();
         ArrayList<Operation> operationList = new ArrayList<>();
         for(HashMap.Entry<Long, Object> entry : sourceMap.entrySet()){
